@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bütün Sifarişlər</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f8f8f8; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        h2 { text-align: center; }
+        .order-item { border-bottom: 1px solid #ddd; padding: 10px; }
+        .notification { display: none; background: red; color: white; padding: 10px; text-align: center; font-weight: bold; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="notification" id="notification">🔴 Yeni sifariş var!</div>
+
+    <div class="container">
+        <h2>Bütün Sifarişlər</h2>
+        <div id="orders-list"></div>
+    </div>
+
+        <audio id="notification-sound" src="bildiriş səsi.mp3"></audio>
+
+    </audio>
+     
+    <div>
+        <button onclick="clearOrders()" style="background: red; color: white; padding: 10px; border: none; cursor: pointer;">
+            Bütün Sifarişləri Təmizlə
+        </button>
+    </div>
+
+    <script>
+      function loadOrders() {
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    let ordersList = document.getElementById("orders-list");
+    ordersList.innerHTML = "";
+
+    if (orders.length === 0) {
+        ordersList.innerHTML = "<p>Hələ heç bir sifariş yoxdur.</p>";
+        return;
+    }
+
+    orders.forEach((order, index) => {
+        let orderElement = document.createElement("div");
+        orderElement.classList.add("order-item");
+        orderElement.innerHTML = `
+            <h3>Sifariş #${index + 1}</h3>
+            <p><strong>Ad Soyad:</strong> ${order.user.name}</p>
+            <p><strong>Ünvan:</strong> ${order.user.address}</p>
+            <p><strong>Masa:</strong> ${order.table}</p>
+            <p><strong>Telefon:</strong> ${order.user.phone}</p>
+            <p><strong>Sifarişlər:</strong></p>
+            <ul>
+                ${order.cart.map(item => `<li>${item.name} - ${item.price} AZN</li>`).join("")}
+            </ul>
+            <p><strong>Ümumi Məbləğ:</strong> ${order.total} AZN</p>
+            <hr>
+        `;
+        ordersList.appendChild(orderElement);
+    });
+}
+
+function clearOrders() {
+    if (confirm("Bütün sifarişləri silmək istədiyinizə əminsiniz?")) {
+        localStorage.removeItem("orders");
+        localStorage.setItem("lastOrderCount", 0);
+        document.getElementById("orders-list").innerHTML = "<p>Hələ heç bir sifariş yoxdur.</p>";
+        alert("Bütün sifarişlər silindi!");
+    }
+}
+
+function checkNewOrders() {
+    let lastOrderCount = parseInt(localStorage.getItem("lastOrderCount")) || 0;
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+    if (orders.length > lastOrderCount) {
+        let newOrdersCount = orders.length - lastOrderCount;
+
+        // **Hər yeni sifariş üçün bildiriş səsi çal**
+        for (let i = 0; i < newOrdersCount; i++) {
+            setTimeout(() => {
+                let audio = new Audio("bildiriş səsi.mp3"); // Bildiriş səsi
+                audio.play();
+            }, i * 1000); // Hər səs 1 saniyə aralıqla çalınacaq
+        }
+
+        document.getElementById("notification").style.display = "block"; // Qırmızı bildiriş göstər
+        alert(`${newOrdersCount} yeni sifariş daxil olub!`);
+        localStorage.setItem("lastOrderCount", orders.length);
+    }
+}
+
+// **Hər 5 saniyədən bir yeni sifarişləri yoxlayır**
+setInterval(checkNewOrders, 5000);
+
+window.onload = function() {
+    loadOrders();
+    checkNewOrders();
+};
+
+        
+    </script>
+
+</body>
+</html>
