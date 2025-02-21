@@ -7,6 +7,7 @@ const firebaseConfig = {
     messagingSenderId: "SENIN_SENDER_ID",
     appId: "SENIN_APP_ID"
 };
+console.log("script.js qoşuldu!");
 
 // Firebase-i initialize et
 firebase.initializeApp(firebaseConfig);
